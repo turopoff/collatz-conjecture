@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Collatz conjecture 3n+1</title>
+  </head>
+  <body>
+    <div id="app">
+      <input type="number" v-model="numberModel" />
+      <button @click="onCalc">3n+1 Calc</button>
+
+      <div class="wrap">
+        <div v-for="number in numbers" :key="number">{{number}}</div>
+      </div>
+
+      <div v-if="isShow" class="chart-container">
+        <canvas ref="canvas"></canvas>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script>
+      function run(number) {
+        let numbers = [];
+        let res = calc(number, numbers);
+        return { numbers, res };
+      }
+
+      function calc(n, ns) {
+        ns.push(n);
+        if (n && n > 1 && typeof n == "number") {
+          if (n % 2 == 0) n = n / 2;
+          else n = 3 * n + 1;
+          return calc(n, ns);
+        } else return n;
+      }
+
+      var app = new Vue({
+        el: "#app",
+
+        data: () => ({
+          numberModel: 54,
+          numbers: [],
+          isShow: false,
+        }),
+
+        mounted() {
+          this.onCalc();
+        },
+
+        methods: {
+          onCalc() {
+            const res = run(Number(this.numberModel));
+            this.numbers = res.numbers;
+            const data = {
+              labels: this.numbers,
+              datasets: [
+                {
+                  label: "",
+                  borderColor: "rgb(255, 99, 132)",
+                  data: this.numbers,
+                },
+              ],
+            };
+
+            const config = {
+              type: "line",
+              data: data,
+              options: {
+                plugins: {
+                  legend: false,
+                },
+              },
+            };
+
+            this.isShow = false;
+            this.$nextTick(() => {
+              this.isShow = true;
+              this.$nextTick(() => {
+                const myChart = new Chart(this.$refs.canvas, config);
+              });
+            });
+          },
+        },
+      });
+    </script>
+
+    <style>
+      .wrap {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .wrap > div {
+        padding: 5px;
+      }
+
+      .chart-container {
+        margin-top: 10px;
+        padding-right: 10px;
+        max-height: 90vh;
+      }
+    </style>
+  </body>
+</html>
